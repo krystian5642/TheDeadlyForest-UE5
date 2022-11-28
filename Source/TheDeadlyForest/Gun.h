@@ -23,6 +23,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	inline USkeletalMeshComponent* GetMesh() const{return GunMesh;} 
+
 private:
 	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent* GunMesh;

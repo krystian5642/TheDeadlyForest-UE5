@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Gun.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 APostApocaCharacter::APostApocaCharacter()
@@ -50,6 +51,7 @@ void APostApocaCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	AdjustMaxWalkSpeed();
+	UpdateLeftHandPosition();
 }
 
 // Called to bind functionality to input
@@ -73,6 +75,9 @@ void APostApocaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	//Spacebar and right trigger on the gamepad
 	PlayerInputComponent->BindAction(TEXT("Jump"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::Jump);
 
+	//Aiming
+	PlayerInputComponent->BindAction(TEXT("Aiming"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::StartAiming);
+	PlayerInputComponent->BindAction(TEXT("Aiming"),EInputEvent::IE_Released,this,&APostApocaCharacter::EndAiming);
 }
 
 void APostApocaCharacter::MoveForward(float AxisValue)
@@ -117,8 +122,10 @@ void APostApocaCharacter::ChangeBasicMovementMode(float AxisValue)
 {
 	const FVector Velocity = GetVelocity();
 	float GroundSpeed = FVector(Velocity.X,Velocity.Y,0).Size();
-
-
+	if(BasicMovementMode == EBasicMovementMode::Aiming)
+	{
+		return;
+	}
 	if(GroundSpeed == 0 && BasicMovementMode != EBasicMovementMode::Standing)
 	{
 		BasicMovementMode = EBasicMovementMode::Standing;
@@ -134,5 +141,35 @@ void APostApocaCharacter::ChangeBasicMovementMode(float AxisValue)
 	else if(BasicMovementMode == EBasicMovementMode::Running && !AxisValue)
 	{
 		BasicMovementMode = EBasicMovementMode::Walking;
+	}
+}
+
+void APostApocaCharacter::UpdateLeftHandPosition()
+{
+	if(Gun)
+	{
+		LeftHandPosition = Gun->GetMesh()->GetSocketLocation(TEXT("LeftHandSocket")); 
+	}
+}
+
+void APostApocaCharacter::StartAiming()
+{
+	if(HasAGun())
+	{
+		UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
+		MovementComponent->bOrientRotationToMovement = false;
+		IsPlayerAiming = true;
+		BasicMovementMode = EBasicMovementMode::Aiming;
+	}
+}
+
+void APostApocaCharacter::EndAiming()
+{
+	if(BasicMovementMode == EBasicMovementMode::Aiming)
+	{	
+		UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
+		MovementComponent->bOrientRotationToMovement = true;
+		IsPlayerAiming= false;
+		BasicMovementMode = EBasicMovementMode::Standing;
 	}
 }

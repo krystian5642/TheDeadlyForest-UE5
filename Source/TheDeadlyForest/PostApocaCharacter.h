@@ -15,7 +15,8 @@ enum class EBasicMovementMode : uint8
 {
 	Standing,
 	Walking,
-	Running
+	Running,
+	Aiming
 };
 
 UCLASS()
@@ -40,6 +41,12 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void AdjustMaxWalkSpeed();
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
+	FVector LeftHandPosition;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Combat")
+	bool IsPlayerAiming = false;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -56,6 +63,9 @@ private:
 	void LookUpRate(float AxisValue);
 	void LookRightRate(float AxisValue);
 	void ChangeBasicMovementMode(float AxisValue);
+	void UpdateLeftHandPosition();
+	void StartAiming();
+	void EndAiming();
 
 	UPROPERTY(EditAnywhere,Category="Gamepad")
 	float ControllerRotationRate = 20.f;
