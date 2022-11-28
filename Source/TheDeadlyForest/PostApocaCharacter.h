@@ -8,6 +8,7 @@
 
 class USpringArmComponent;
 class UCameraComponent;
+class AGun;
 
 UENUM(BlueprintType)
 enum class EBasicMovementMode : uint8
@@ -46,6 +47,9 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION(BlueprintCallable)
+	inline bool HasAGun() const {return Gun!=nullptr;}
+
 private:
 	void MoveForward(float AxisValue);
 	void MoveRight(float AxisValue);
@@ -61,5 +65,11 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* Camera;
+
+	UPROPERTY(EditAnywhere,Category="Weapon")
+	TSubclassOf<AGun> GunClass;
+
+	UPROPERTY()
+	AGun* Gun=nullptr;
 
 };

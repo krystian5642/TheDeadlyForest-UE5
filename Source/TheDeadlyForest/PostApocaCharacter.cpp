@@ -5,6 +5,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Gun.h"
 
 // Sets default values
 APostApocaCharacter::APostApocaCharacter()
@@ -27,6 +28,20 @@ APostApocaCharacter::APostApocaCharacter()
 void APostApocaCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Gun = GetWorld()->SpawnActor<AGun>(GunClass);
+
+	USkeletalMeshComponent* CharacterMesh = GetMesh();
+	if(CharacterMesh && Gun)
+	{
+		Gun->AttachToComponent
+		(
+			CharacterMesh,
+			FAttachmentTransformRules::KeepRelativeTransform,
+			TEXT("RifleSocket")
+		);
+		Gun->SetOwner(this);
+	}
 
 }
 
