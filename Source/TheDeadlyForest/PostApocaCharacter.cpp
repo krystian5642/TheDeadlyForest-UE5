@@ -87,7 +87,10 @@ void APostApocaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	//Aiming
 	PlayerInputComponent->BindAction(TEXT("Aiming"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::StartAiming);
 	PlayerInputComponent->BindAction(TEXT("Aiming"),EInputEvent::IE_Released,this,&APostApocaCharacter::EndAiming);
-		PlayerInputComponent->BindAction(TEXT("ChangeCamera"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::ChangeCameraMode);
+	PlayerInputComponent->BindAction(TEXT("ChangeCamera"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::ChangeCameraMode);
+
+	//Shooting
+	PlayerInputComponent->BindAction(TEXT("PullTrigger"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::PullTrigger);
 }
 
 void APostApocaCharacter::MoveForward(float AxisValue)
@@ -228,5 +231,13 @@ void APostApocaCharacter::ControlCameraMode()
 	if(CameraMode == ECameraMode::FirstPerson && bUseControllerRotationYaw== false)
 	{
 		bUseControllerRotationYaw= true;
+	}
+}
+
+void APostApocaCharacter::PullTrigger()
+{	
+	if(Gun && IsPlayerAiming)
+	{
+		bool bIsGunShooting = Gun->Shoot();
 	}
 }

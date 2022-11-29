@@ -78,6 +78,7 @@ private:
 	void StartAiming();
 	void EndAiming();
 	void ChangeCameraMode();
+	void PullTrigger();
 	
 	//Because bUseControllerRotationYaw is set to false when we finish aiming
 	void ControlCameraMode();

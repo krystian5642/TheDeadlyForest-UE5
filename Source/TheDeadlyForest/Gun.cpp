@@ -2,6 +2,8 @@
 
 
 #include "Gun.h"
+#include "Sound/SoundBase.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AGun::AGun()
@@ -10,13 +12,28 @@ AGun::AGun()
 	PrimaryActorTick.bCanEverTick = true;
 
 	GunMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMesh"));
+	SetRootComponent(GunMesh);
 }
 
 // Called when the game starts or when spawned
 void AGun::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	CurrentAmmo=MaxAmmo;
+}
+
+bool AGun::Shoot()
+{	
+	if(CurrentAmmo==0)
+	{
+		return false;
+	}
+	if(ShootSound)
+	{
+		UGameplayStatics::SpawnSoundAttached(ShootSound,GunMesh,TEXT("Muzzle"));
+	}
+	CurrentAmmo--;
+	return true;
 }
 
 // Called every frame
