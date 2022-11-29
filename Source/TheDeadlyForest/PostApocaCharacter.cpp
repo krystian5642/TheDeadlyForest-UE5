@@ -15,13 +15,21 @@ APostApocaCharacter::APostApocaCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-    Camera  = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+    ThirdPersonCamera  = CreateDefaultSubobject<UCameraComponent>(TEXT("ThirdPersonCamera"));
+	FirstPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 
 	USkeletalMeshComponent* CharacterMesh = GetMesh();
 	if(CharacterMesh)
 	{
 		SpringArm->SetupAttachment(CharacterMesh);
-    	Camera->SetupAttachment(SpringArm);
+		FirstPersonCamera->AttachToComponent
+		(
+			CharacterMesh,
+			FAttachmentTransformRules::KeepRelativeTransform,
+			TEXT("head")
+		);
+		FirstPersonCamera->bAutoActivate =false;
+    	ThirdPersonCamera->SetupAttachment(SpringArm);
 	}
 }
 
@@ -51,7 +59,8 @@ void APostApocaCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	AdjustMaxWalkSpeed();
-	UpdateLeftHandPosition();
+	UpdateLeftHandTransform();
+	ControlCameraMode();
 }
 
 // Called to bind functionality to input
@@ -78,6 +87,7 @@ void APostApocaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	//Aiming
 	PlayerInputComponent->BindAction(TEXT("Aiming"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::StartAiming);
 	PlayerInputComponent->BindAction(TEXT("Aiming"),EInputEvent::IE_Released,this,&APostApocaCharacter::EndAiming);
+		PlayerInputComponent->BindAction(TEXT("ChangeCamera"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::ChangeCameraMode);
 }
 
 void APostApocaCharacter::MoveForward(float AxisValue)
@@ -144,11 +154,22 @@ void APostApocaCharacter::ChangeBasicMovementMode(float AxisValue)
 	}
 }
 
-void APostApocaCharacter::UpdateLeftHandPosition()
+void APostApocaCharacter::UpdateLeftHandTransform()
 {
-	if(Gun)
+	if(Gun && GetMesh())
 	{
-		LeftHandPosition = Gun->GetMesh()->GetSocketLocation(TEXT("LeftHandSocket")); 
+		LeftHandTransform = Gun->GetMesh()->GetSocketTransform(TEXT("LeftHandSocket"));
+		FVector OutPosition = LeftHandTransform.GetLocation();
+		FRotator OutRotation = LeftHandTransform.GetRotation().Rotator();
+		GetMesh()->TransformToBoneSpace
+		(
+    		TEXT("hand_r"),
+    		OutPosition,
+    		OutRotation,
+    		OutPosition,
+    		OutRotation
+		);
+		LeftHandTransform = FTransform(OutRotation.Quaternion(),OutPosition);
 	}
 }
 
@@ -159,6 +180,7 @@ void APostApocaCharacter::StartAiming()
 		UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
 		MovementComponent->bOrientRotationToMovement = false;
 		IsPlayerAiming = true;
+		bUseControllerRotationYaw= true;
 		BasicMovementMode = EBasicMovementMode::Aiming;
 	}
 }
@@ -170,6 +192,41 @@ void APostApocaCharacter::EndAiming()
 		UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
 		MovementComponent->bOrientRotationToMovement = true;
 		IsPlayerAiming= false;
+		bUseControllerRotationYaw = false;
 		BasicMovementMode = EBasicMovementMode::Standing;
+	}
+}
+
+void APostApocaCharacter::ChangeCameraMode()
+{
+	switch(CameraMode)
+	{
+		case ECameraMode::ThirdPersonClose:
+			CameraMode = ECameraMode::ThirdPersonFar;
+			SpringArm->TargetArmLength*=3.f/2.f;
+			break;
+
+		case ECameraMode::ThirdPersonFar:
+			CameraMode = ECameraMode::FirstPerson;
+			bUseControllerRotationYaw= true;
+			FirstPersonCamera->SetActive(true);
+			ThirdPersonCamera->SetActive(false);
+			break;
+
+		case ECameraMode::FirstPerson:
+			CameraMode = ECameraMode::ThirdPersonClose;
+			SpringArm->TargetArmLength*=2.f/3.f;
+			bUseControllerRotationYaw= false;
+			ThirdPersonCamera->SetActive(true);
+			FirstPersonCamera->SetActive(false);
+			break;
+	}
+}
+
+void APostApocaCharacter::ControlCameraMode()
+{
+	if(CameraMode == ECameraMode::FirstPerson && bUseControllerRotationYaw== false)
+	{
+		bUseControllerRotationYaw= true;
 	}
 }

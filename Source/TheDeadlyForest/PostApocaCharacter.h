@@ -19,6 +19,14 @@ enum class EBasicMovementMode : uint8
 	Aiming
 };
 
+UENUM(BlueprintType)
+enum class ECameraMode : uint8
+{
+	ThirdPersonClose,
+	ThirdPersonFar,
+	FirstPerson
+};
+
 UCLASS()
 class THEDEADLYFOREST_API APostApocaCharacter : public ACharacter
 {
@@ -42,10 +50,13 @@ protected:
 	void AdjustMaxWalkSpeed();
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
-	FVector LeftHandPosition;
+	FTransform LeftHandTransform;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Combat")
 	bool IsPlayerAiming = false;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Camera")
+	ECameraMode CameraMode = ECameraMode::ThirdPersonClose;
 
 public:	
 	// Called every frame
@@ -63,9 +74,13 @@ private:
 	void LookUpRate(float AxisValue);
 	void LookRightRate(float AxisValue);
 	void ChangeBasicMovementMode(float AxisValue);
-	void UpdateLeftHandPosition();
+	void UpdateLeftHandTransform();
 	void StartAiming();
 	void EndAiming();
+	void ChangeCameraMode();
+	
+	//Because bUseControllerRotationYaw is set to false when we finish aiming
+	void ControlCameraMode();
 
 	UPROPERTY(EditAnywhere,Category="Gamepad")
 	float ControllerRotationRate = 20.f;
@@ -74,7 +89,10 @@ private:
 	USpringArmComponent* SpringArm;
 
 	UPROPERTY(VisibleAnywhere)
-	UCameraComponent* Camera;
+	UCameraComponent* ThirdPersonCamera;
+
+	UPROPERTY(VisibleAnywhere)
+	UCameraComponent* FirstPersonCamera;
 
 	UPROPERTY(EditAnywhere,Category="Weapon")
 	TSubclassOf<AGun> GunClass;
