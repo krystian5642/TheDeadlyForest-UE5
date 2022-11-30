@@ -3,3 +3,8 @@
 
 #include "TheDeadlyForestGameModeBase.h"
 
+
+void ATheDeadlyForestGameModeBase::PawnKilled(APawn* DeadPawn)
+{
+    
+}

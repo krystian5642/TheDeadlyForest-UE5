@@ -13,5 +13,8 @@ UCLASS()
 class THEDEADLYFOREST_API ATheDeadlyForestGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
+
+public:
+	virtual void PawnKilled(APawn* DeadPawn);
 	
 };

@@ -75,6 +75,7 @@ private:
 	void LookUpRate(float AxisValue);
 	void LookRightRate(float AxisValue);
 	void ChangeBasicMovementMode(float AxisValue);
+	void Jump();
 
 	//Other functions
 	void UpdateLeftHandTransform();
@@ -83,7 +84,6 @@ private:
 	void ChangeCameraMode();
 	void PullTrigger();
 	void ToFirstPersonCamera(bool bFirstPerson);
-
 
 	//Because bUseControllerRotationYaw is set to false when we finish aiming
 	void ControlCameraMode();

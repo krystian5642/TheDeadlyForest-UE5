@@ -13,5 +13,11 @@ UCLASS()
 class THEDEADLYFOREST_API AKillAndSurviveGameMode : public ATheDeadlyForestGameModeBase
 {
 	GENERATED_BODY()
+
+public:
+	virtual void PawnKilled(APawn* DeadPawn);
+
+private:
+	void EndGame(bool bIsPlayerWinner);
 	
 };

@@ -38,6 +38,7 @@ bool AGun::Shoot(FHitResult& HitResult, FVector& ShotDirection)
 	FRotator Rotation;
 	Controller->GetPlayerViewPoint(Location,Rotation);
 
+	ShotDirection = -Rotation.Vector();
 	FCollisionQueryParams ParamIgnore;
 	ParamIgnore.AddIgnoredActor(this);
 	ParamIgnore.AddIgnoredActor(GetOwner());

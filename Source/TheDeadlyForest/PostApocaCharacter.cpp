@@ -8,6 +8,7 @@
 #include "Gun.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "BasicZombie.h"
+#include "Components/PrimitiveComponent.h"
 
 // Sets default values
 APostApocaCharacter::APostApocaCharacter()
@@ -158,6 +159,14 @@ void APostApocaCharacter::ChangeBasicMovementMode(float AxisValue)
 	}
 }
 
+void APostApocaCharacter::Jump()
+{
+	if( BasicMovementMode==EBasicMovementMode::Running)
+	{
+		Super::Jump();
+	}
+}
+
 void APostApocaCharacter::UpdateLeftHandTransform()
 {
 	if(Gun && GetMesh())
@@ -258,9 +267,17 @@ void APostApocaCharacter::PullTrigger()
 	{
 		if(ABasicZombie* Zombie = Cast<ABasicZombie>(HitRes.GetActor()))
 		{	
+			UPrimitiveComponent* HitComponent = HitRes.GetComponent();
+			float Damage = Gun->GetDamage();
+			//we have to check if our shot has hit enemy/zombie head
+			const FName& ZombieHitBoxName = HitComponent->GetFName();
+			if(ZombieHitBoxName == TEXT("HeadHitBox"))
+			{
+				Damage = Zombie->GetCurrentHealth();
+			}
 			AController* MyController = GetController();
-			FPointDamageEvent DamageEvent(Gun->GetDamage(),HitRes,ShotDirection,nullptr);			
-			Zombie->TakeDamage(Gun->GetDamage(),DamageEvent,MyController,Gun);		
+			FPointDamageEvent DamageEvent(Damage,HitRes,ShotDirection,nullptr);			
+			Zombie->TakeDamage(Damage,DamageEvent,MyController,Gun);		
 		}			
 	}
 }
