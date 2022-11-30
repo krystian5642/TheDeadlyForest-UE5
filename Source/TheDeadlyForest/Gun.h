@@ -32,7 +32,11 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	inline USkeletalMeshComponent* GetMesh() const{return GunMesh;} 
-	bool Shoot();
+	bool Shoot(FHitResult& HitResult, FVector& ShotDirection);
+
+	inline float GetDamage() const {return Damage;}
+
+	AController* GetMyOwnerController() const;
 
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -40,5 +44,7 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	USoundBase* ShootSound;
-
+	
+	UPROPERTY(EditDefaultsOnly,Category="Combat")
+	float Damage = 20.f;
 };

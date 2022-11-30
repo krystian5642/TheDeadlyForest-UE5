@@ -7,6 +7,8 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Gun.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "HealthComponent.h"
+#include "BasicZombie.h"
 
 // Sets default values
 APostApocaCharacter::APostApocaCharacter()
@@ -31,6 +33,7 @@ APostApocaCharacter::APostApocaCharacter()
 		FirstPersonCamera->bAutoActivate =false;
     	ThirdPersonCamera->SetupAttachment(SpringArm);
 	}
+	Health=CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
 }
 
 // Called when the game starts or when spawned
@@ -210,20 +213,30 @@ void APostApocaCharacter::ChangeCameraMode()
 			break;
 
 		case ECameraMode::ThirdPersonFar:
-			CameraMode = ECameraMode::FirstPerson;
-			bUseControllerRotationYaw= true;
-			FirstPersonCamera->SetActive(true);
-			ThirdPersonCamera->SetActive(false);
+			ToFirstPersonCamera(true);
 			break;
 
 		case ECameraMode::FirstPerson:
-			CameraMode = ECameraMode::ThirdPersonClose;
-			SpringArm->TargetArmLength*=2.f/3.f;
-			bUseControllerRotationYaw= false;
-			ThirdPersonCamera->SetActive(true);
-			FirstPersonCamera->SetActive(false);
+			SpringArm->TargetArmLength*=2.f/3.f;			
+			ToFirstPersonCamera(false);
 			break;
 	}
+}
+
+void APostApocaCharacter::ToFirstPersonCamera(bool bFirstPerson)
+{
+	bUseControllerRotationYaw=bFirstPerson;
+	FirstPersonCamera->SetActive(bFirstPerson);
+	ThirdPersonCamera->SetActive(!bFirstPerson);
+	if(bFirstPerson)
+	{
+		CameraMode = ECameraMode::FirstPerson;
+	}
+	else
+	{
+		CameraMode = ECameraMode::ThirdPersonClose;
+	}
+	
 }
 
 void APostApocaCharacter::ControlCameraMode()
@@ -236,8 +249,20 @@ void APostApocaCharacter::ControlCameraMode()
 
 void APostApocaCharacter::PullTrigger()
 {	
+	bool bIsHitSomething = false;
+	FHitResult HitRes;
+	FVector ShotDirection;
 	if(Gun && IsPlayerAiming)
 	{
-		bool bIsGunShooting = Gun->Shoot();
+		bIsHitSomething = Gun->Shoot(HitRes,ShotDirection);
+	}
+	if(bIsHitSomething)
+	{
+		if(ABasicZombie* Zombie = Cast<ABasicZombie>(HitRes.GetActor()))
+		{	
+			AController* MyController = GetController();
+			FPointDamageEvent DamageEvent(Gun->GetDamage(),HitRes,ShotDirection,nullptr);			
+			Zombie->TakeDamage(Gun->GetDamage(),DamageEvent,MyController,Gun);		
+		}			
 	}
 }

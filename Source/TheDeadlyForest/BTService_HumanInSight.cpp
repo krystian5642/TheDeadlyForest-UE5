@@ -17,9 +17,22 @@ void UBTService_HumanInSight::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
     Super::TickNode(OwnerComp,NodeMemory,DeltaSeconds);
     APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this,0);
     UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
+    AAIController* AIController = OwnerComp.GetAIOwner();
 
-    if(PlayerPawn && BlackboardComp)
+    if(PlayerPawn && BlackboardComp && AIController)
     {
-        BlackboardComp->SetValueAsVector(GetSelectedBlackboardKey(),PlayerPawn->GetActorLocation());
+        bool CanSeePrey = AIController->LineOfSightTo(PlayerPawn);
+        if(CanSeePrey)
+        {
+            BlackboardComp->SetValueAsVector
+            (
+                GetSelectedBlackboardKey(),
+                PlayerPawn->GetActorLocation()
+            );
+        }
+        else
+        {
+            BlackboardComp->ClearValue(GetSelectedBlackboardKey());
+        }
     }
 }

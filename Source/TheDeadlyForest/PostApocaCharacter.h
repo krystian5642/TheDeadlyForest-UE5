@@ -9,6 +9,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 class AGun;
+class UHealthComponent;
 
 UENUM(BlueprintType)
 enum class EBasicMovementMode : uint8
@@ -69,17 +70,22 @@ public:
 	inline bool HasAGun() const {return Gun!=nullptr;}
 
 private:
+	//Basic movement and camera rotation
 	void MoveForward(float AxisValue);
 	void MoveRight(float AxisValue);
 	void LookUpRate(float AxisValue);
 	void LookRightRate(float AxisValue);
 	void ChangeBasicMovementMode(float AxisValue);
+
+	//Other functions
 	void UpdateLeftHandTransform();
 	void StartAiming();
 	void EndAiming();
 	void ChangeCameraMode();
 	void PullTrigger();
-	
+	void ToFirstPersonCamera(bool bFirstPerson);
+
+
 	//Because bUseControllerRotationYaw is set to false when we finish aiming
 	void ControlCameraMode();
 
@@ -100,5 +106,8 @@ private:
 
 	UPROPERTY()
 	AGun* Gun=nullptr;
+
+	UPROPERTY(VisibleAnywhere,Category="Health")
+	UHealthComponent* Health;
 
 };

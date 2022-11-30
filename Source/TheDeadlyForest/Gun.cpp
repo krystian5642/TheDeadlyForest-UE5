@@ -22,7 +22,7 @@ void AGun::BeginPlay()
 	CurrentAmmo=MaxAmmo;
 }
 
-bool AGun::Shoot()
+bool AGun::Shoot(FHitResult& HitResult, FVector& ShotDirection)
 {	
 	if(CurrentAmmo==0)
 	{
@@ -32,8 +32,27 @@ bool AGun::Shoot()
 	{
 		UGameplayStatics::SpawnSoundAttached(ShootSound,GunMesh,TEXT("Muzzle"));
 	}
+
+	AController* Controller = GetMyOwnerController();
+	FVector Location;
+	FRotator Rotation;
+	Controller->GetPlayerViewPoint(Location,Rotation);
+
+	FCollisionQueryParams ParamIgnore;
+	ParamIgnore.AddIgnoredActor(this);
+	ParamIgnore.AddIgnoredActor(GetOwner());
+
+	FVector End = Location + Rotation.Vector() * 1000;
+	bool bHitSomething = GetWorld()->LineTraceSingleByChannel
+	(
+		HitResult,
+		Location,
+		End,
+		ECC_GameTraceChannel1,
+		ParamIgnore
+	);
 	CurrentAmmo--;
-	return true;
+	return bHitSomething;
 }
 
 // Called every frame
@@ -41,5 +60,14 @@ void AGun::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+AController* AGun::GetMyOwnerController() const
+{
+	APawn* OwnerPawn = Cast<APawn>(GetOwner());
+	if(OwnerPawn == nullptr) return nullptr;
+
+	AController* MyOwnerController = OwnerPawn->GetController();
+	return MyOwnerController;
 }
 

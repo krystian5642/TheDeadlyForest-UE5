@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "BasicZombie.generated.h"
 
+class UHealthComponent;
+
 UCLASS()
 class THEDEADLYFOREST_API ABasicZombie : public ACharacter
 {
@@ -23,7 +25,11 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+private:
+	UPROPERTY(VisibleAnywhere,Category="Health")
+	UHealthComponent* Health;
+
 
 };
