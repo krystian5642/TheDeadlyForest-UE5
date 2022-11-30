@@ -9,7 +9,6 @@
 class USpringArmComponent;
 class UCameraComponent;
 class AGun;
-class UHealthComponent;
 
 UENUM(BlueprintType)
 enum class EBasicMovementMode : uint8
@@ -107,7 +106,9 @@ private:
 	UPROPERTY()
 	AGun* Gun=nullptr;
 
-	UPROPERTY(VisibleAnywhere,Category="Health")
-	UHealthComponent* Health;
+	UPROPERTY(EditDefaultsOnly,Category="Health")
+	float MaxHealth =100.f;
 
+	UPROPERTY(VisibleAnywhere,Category="Health")
+	float CurrentHealth = 0.f;
 };

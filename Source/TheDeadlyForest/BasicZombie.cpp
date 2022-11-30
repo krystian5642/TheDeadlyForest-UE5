@@ -2,21 +2,19 @@
 
 
 #include "BasicZombie.h"
-#include "HealthComponent.h"
 
 // Sets default values
 ABasicZombie::ABasicZombie()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	Health=CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
 }
 
 // Called when the game starts or when spawned
 void ABasicZombie::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	CurrentHealth=MaxHealth;
 }
 
 // Called every frame
@@ -29,7 +27,12 @@ void ABasicZombie::Tick(float DeltaTime)
 float ABasicZombie::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
-	float DamageApplied = Health->ApplyDamage(DamageAmount);
+	if(DamageAmount<0)
+	{
+		return 0;
+	}
+	float DamageApplied = FMath::Min(CurrentHealth,DamageAmount);
+	CurrentHealth-=DamageApplied;
 	return DamageApplied;
 }
 

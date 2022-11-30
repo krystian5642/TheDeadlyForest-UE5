@@ -6,8 +6,6 @@
 #include "GameFramework/Character.h"
 #include "BasicZombie.generated.h"
 
-class UHealthComponent;
-
 UCLASS()
 class THEDEADLYFOREST_API ABasicZombie : public ACharacter
 {
@@ -27,9 +25,14 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-private:
-	UPROPERTY(VisibleAnywhere,Category="Health")
-	UHealthComponent* Health;
+	UFUNCTION(BlueprintCallable)
+	inline bool IsAlive() const{return CurrentHealth<=0;}
 
+private:
+	UPROPERTY(EditDefaultsOnly,Category="Health")
+	float MaxHealth =100.f;
+
+	UPROPERTY(VisibleAnywhere,Category="Health")
+	float CurrentHealth = 0.f;
 
 };

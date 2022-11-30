@@ -7,7 +7,6 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Gun.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "HealthComponent.h"
 #include "BasicZombie.h"
 
 // Sets default values
@@ -33,7 +32,6 @@ APostApocaCharacter::APostApocaCharacter()
 		FirstPersonCamera->bAutoActivate =false;
     	ThirdPersonCamera->SetupAttachment(SpringArm);
 	}
-	Health=CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
 }
 
 // Called when the game starts or when spawned
@@ -54,7 +52,7 @@ void APostApocaCharacter::BeginPlay()
 		);
 		Gun->SetOwner(this);
 	}
-
+	CurrentHealth=MaxHealth;
 }
 
 // Called every frame
