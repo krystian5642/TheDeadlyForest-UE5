@@ -21,11 +21,11 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly,Category="Clip")
-	int16 MaxAmmo = 40;
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category="Clip")
+	int MaxAmmo = 40;
 	
-	UPROPERTY(VisibleAnywhere,Category="Clip")
-	int16 CurrentAmmo =0;
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clip")
+	int CurrentAmmo =0;
 
 public:	
 	// Called every frame
@@ -47,4 +47,7 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly,Category="Combat")
 	float Damage = 20.f;
+
+	UPROPERTY(EditDefaultsOnly,Category="Combat")
+	float FireRange = 15000;
 };

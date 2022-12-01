@@ -4,18 +4,18 @@
 #include "BasicZombie.h"
 #include "Components/CapsuleComponent.h"
 #include "KillAndSurviveGameMode.h"
-#include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values
 ABasicZombie::ABasicZombie()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	HeadHitBox = CreateDefaultSubobject<UBoxComponent>(TEXT("HeadHitBox"));
+	HeadHitCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("HeadHitCapsule"));
 	USkeletalMeshComponent* CharacterMesh = GetMesh();
 	if(CharacterMesh)
 	{
-		HeadHitBox->AttachToComponent
+		HeadHitCapsule->AttachToComponent
 		(
 			CharacterMesh,
 			FAttachmentTransformRules::KeepRelativeTransform,

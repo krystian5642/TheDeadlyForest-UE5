@@ -53,7 +53,7 @@ protected:
 	FTransform LeftHandTransform;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Combat")
-	bool IsPlayerAiming = false;
+	bool bIsPlayerAiming = false;
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Camera")
 	ECameraMode CameraMode = ECameraMode::ThirdPersonClose;
@@ -103,7 +103,7 @@ private:
 	UPROPERTY(EditAnywhere,Category="Weapon")
 	TSubclassOf<AGun> GunClass;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly,meta=(AllowPrivateAccess=true))
 	AGun* Gun=nullptr;
 
 	UPROPERTY(EditDefaultsOnly,Category="Health")

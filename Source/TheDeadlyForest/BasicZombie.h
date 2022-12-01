@@ -6,7 +6,7 @@
 #include "GameFramework/Character.h"
 #include "BasicZombie.generated.h"
 
-class UBoxComponent;
+class UCapsuleComponent;
 
 UCLASS()
 class THEDEADLYFOREST_API ABasicZombie : public ACharacter
@@ -49,6 +49,6 @@ private:
 
 	//When head is hit by bullet, zombie dies
 	UPROPERTY(VisibleAnywhere)
-	UBoxComponent* HeadHitBox;
+	UCapsuleComponent* HeadHitCapsule;
 
 };

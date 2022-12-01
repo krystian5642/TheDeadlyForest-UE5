@@ -4,6 +4,7 @@
 #include "Gun.h"
 #include "Sound/SoundBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 AGun::AGun()
@@ -43,7 +44,7 @@ bool AGun::Shoot(FHitResult& HitResult, FVector& ShotDirection)
 	ParamIgnore.AddIgnoredActor(this);
 	ParamIgnore.AddIgnoredActor(GetOwner());
 
-	FVector End = Location + Rotation.Vector() * 1000;
+	FVector End = Location + Rotation.Vector() * FireRange;
 	bool bHitSomething = GetWorld()->LineTraceSingleByChannel
 	(
 		HitResult,

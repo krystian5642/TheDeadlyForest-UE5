@@ -192,7 +192,7 @@ void APostApocaCharacter::StartAiming()
 	{
 		UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
 		MovementComponent->bOrientRotationToMovement = false;
-		IsPlayerAiming = true;
+		bIsPlayerAiming = true;
 		bUseControllerRotationYaw= true;
 		BasicMovementMode = EBasicMovementMode::Aiming;
 	}
@@ -204,7 +204,7 @@ void APostApocaCharacter::EndAiming()
 	{	
 		UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
 		MovementComponent->bOrientRotationToMovement = true;
-		IsPlayerAiming= false;
+		bIsPlayerAiming= false;
 		bUseControllerRotationYaw = false;
 		BasicMovementMode = EBasicMovementMode::Standing;
 	}
@@ -259,7 +259,7 @@ void APostApocaCharacter::PullTrigger()
 	bool bIsHitSomething = false;
 	FHitResult HitRes;
 	FVector ShotDirection;
-	if(Gun && IsPlayerAiming)
+	if(Gun && bIsPlayerAiming)
 	{
 		bIsHitSomething = Gun->Shoot(HitRes,ShotDirection);
 	}
@@ -271,7 +271,7 @@ void APostApocaCharacter::PullTrigger()
 			float Damage = Gun->GetDamage();
 			//we have to check if our shot has hit enemy/zombie head
 			const FName& ZombieHitBoxName = HitComponent->GetFName();
-			if(ZombieHitBoxName == TEXT("HeadHitBox"))
+			if(ZombieHitBoxName == TEXT("HeadHitCapsule"))
 			{
 				Damage = Zombie->GetCurrentHealth();
 			}
