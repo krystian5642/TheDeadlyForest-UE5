@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Containers/ContainerAllocationPolicies.h"
 #include "PostApocaCharacter.generated.h"
 
 class USpringArmComponent;
@@ -66,7 +67,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(BlueprintCallable)
-	inline bool HasAGun() const {return Gun!=nullptr;}
+	inline bool HasAGun() const {return CurrentWeapon!=nullptr;}
 
 private:
 	//Basic movement and camera rotation
@@ -84,6 +85,10 @@ private:
 	void ChangeCameraMode();
 	void PullTrigger();
 	void ToFirstPersonCamera(bool bFirstPerson);
+	void SetAiming(bool bIsAiming);
+	void SwitchWeaponUp();
+	void SwitchWeaponDown();
+	void EnableNewWeapon();
 
 	//Because bUseControllerRotationYaw is set to false when we finish aiming
 	void ControlCameraMode();
@@ -101,14 +106,24 @@ private:
 	UCameraComponent* FirstPersonCamera;
 
 	UPROPERTY(EditAnywhere,Category="Weapon")
-	TSubclassOf<AGun> GunClass;
+	TArray<TSubclassOf<AGun>> WeaponClasses;
+
+	UPROPERTY(VisibleAnywhere,Category="Weapon")
+	int32 WeaponsNumber=0;
+
+	UPROPERTY(VisibleAnywhere,Category="Weapon")
+	int32 CurrentWeaponIndex=0;
 
 	UPROPERTY(BlueprintReadOnly,meta=(AllowPrivateAccess=true))
-	AGun* Gun=nullptr;
+	AGun* CurrentWeapon = nullptr;
+
+	UPROPERTY()
+	TArray<AGun*> AllAvailableWeapons;
 
 	UPROPERTY(EditDefaultsOnly,Category="Health")
 	float MaxHealth =100.f;
 
 	UPROPERTY(VisibleAnywhere,Category="Health")
 	float CurrentHealth = 0.f;
+
 };

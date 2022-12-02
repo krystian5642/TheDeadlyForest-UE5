@@ -40,18 +40,37 @@ void APostApocaCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Gun = GetWorld()->SpawnActor<AGun>(GunClass);
-
+	WeaponsNumber = WeaponClasses.Num();
 	USkeletalMeshComponent* CharacterMesh = GetMesh();
-	if(CharacterMesh && Gun)
+	if(CharacterMesh)
 	{
-		Gun->AttachToComponent
-		(
-			CharacterMesh,
-			FAttachmentTransformRules::KeepRelativeTransform,
-			TEXT("RifleSocket")
-		);
-		Gun->SetOwner(this);
+		for(const auto& WeaponClass : WeaponClasses)
+		{
+			if(WeaponClass)
+			{
+				AllAvailableWeapons.Add(GetWorld()->SpawnActor<AGun>(WeaponClass));
+				if(AGun* TheLastAddedGun = AllAvailableWeapons.Top())
+				{
+					TheLastAddedGun->AttachToComponent
+					(
+						CharacterMesh,
+						FAttachmentTransformRules::KeepRelativeTransform,
+						TEXT("WeaponSocket")
+					);
+					TheLastAddedGun->SetOwner(this);
+					TheLastAddedGun->SetActorHiddenInGame(true);
+				}
+			}
+			else
+			{
+				AllAvailableWeapons.Add(nullptr);
+			}
+		}
+		CurrentWeapon = AllAvailableWeapons[0];
+		if(CurrentWeapon)
+		{
+			CurrentWeapon->SetActorHiddenInGame(false);
+		}
 	}
 	CurrentHealth=MaxHealth;
 }
@@ -73,6 +92,8 @@ void APostApocaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	//Mouse
 	PlayerInputComponent->BindAxis(TEXT("LookUp"),this,&APostApocaCharacter::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis(TEXT("LookRight"),this,&APostApocaCharacter::AddControllerYawInput);
+	PlayerInputComponent->BindAction(TEXT("SwitchWeaponUp"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::SwitchWeaponUp);
+	PlayerInputComponent->BindAction(TEXT("SwitchWeaponDown"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::SwitchWeaponDown);
 
 	//Gamepad
 	PlayerInputComponent->BindAxis(TEXT("LookUpRate"),this,&APostApocaCharacter::LookUpRate);
@@ -169,9 +190,9 @@ void APostApocaCharacter::Jump()
 
 void APostApocaCharacter::UpdateLeftHandTransform()
 {
-	if(Gun && GetMesh())
+	if(CurrentWeapon && GetMesh())
 	{
-		LeftHandTransform = Gun->GetMesh()->GetSocketTransform(TEXT("LeftHandSocket"));
+		LeftHandTransform = CurrentWeapon->GetMesh()->GetSocketTransform(TEXT("LeftHandSocket"));
 		FVector OutPosition = LeftHandTransform.GetLocation();
 		FRotator OutRotation = LeftHandTransform.GetRotation().Rotator();
 		GetMesh()->TransformToBoneSpace
@@ -190,10 +211,7 @@ void APostApocaCharacter::StartAiming()
 {
 	if(HasAGun())
 	{
-		UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
-		MovementComponent->bOrientRotationToMovement = false;
-		bIsPlayerAiming = true;
-		bUseControllerRotationYaw= true;
+		SetAiming(true);
 		BasicMovementMode = EBasicMovementMode::Aiming;
 	}
 }
@@ -202,11 +220,56 @@ void APostApocaCharacter::EndAiming()
 {
 	if(BasicMovementMode == EBasicMovementMode::Aiming)
 	{	
-		UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
-		MovementComponent->bOrientRotationToMovement = true;
-		bIsPlayerAiming= false;
-		bUseControllerRotationYaw = false;
+		SetAiming(false);
 		BasicMovementMode = EBasicMovementMode::Standing;
+	}
+}
+
+void APostApocaCharacter::SetAiming(bool bIsAiming)
+{
+	UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
+	if(!MovementComponent)
+	{
+		return;
+	}
+	MovementComponent->bOrientRotationToMovement = !bIsAiming;
+	bIsPlayerAiming= bIsAiming;
+	bUseControllerRotationYaw = bIsAiming;
+}
+
+void APostApocaCharacter::SwitchWeaponUp()
+{
+	++CurrentWeaponIndex%=WeaponsNumber;
+	EnableNewWeapon();
+}
+
+void APostApocaCharacter::SwitchWeaponDown()
+{
+	if(CurrentWeaponIndex - 1 < 0)
+	{
+		CurrentWeaponIndex = WeaponsNumber-1;
+	}
+	else 
+	{
+		CurrentWeaponIndex--;
+	}
+	EnableNewWeapon();
+}
+
+void APostApocaCharacter::EnableNewWeapon()
+{
+	if(CurrentWeapon)
+	{
+		CurrentWeapon->SetActorHiddenInGame(true);
+	}
+	CurrentWeapon = AllAvailableWeapons[CurrentWeaponIndex];
+	if(CurrentWeapon)
+	{
+		CurrentWeapon->SetActorHiddenInGame(false);
+	}
+	else if(bIsPlayerAiming)
+	{
+		bIsPlayerAiming = false;
 	}
 }
 
@@ -259,16 +322,16 @@ void APostApocaCharacter::PullTrigger()
 	bool bIsHitSomething = false;
 	FHitResult HitRes;
 	FVector ShotDirection;
-	if(Gun && bIsPlayerAiming)
+	if(CurrentWeapon && bIsPlayerAiming)
 	{
-		bIsHitSomething = Gun->Shoot(HitRes,ShotDirection);
+		bIsHitSomething = CurrentWeapon->Shoot(HitRes,ShotDirection);
 	}
 	if(bIsHitSomething)
 	{
 		if(ABasicZombie* Zombie = Cast<ABasicZombie>(HitRes.GetActor()))
 		{	
 			UPrimitiveComponent* HitComponent = HitRes.GetComponent();
-			float Damage = Gun->GetDamage();
+			float Damage = CurrentWeapon->GetDamage();
 			//we have to check if our shot has hit enemy/zombie head
 			const FName& ZombieHitBoxName = HitComponent->GetFName();
 			if(ZombieHitBoxName == TEXT("HeadHitCapsule"))
@@ -277,7 +340,7 @@ void APostApocaCharacter::PullTrigger()
 			}
 			AController* MyController = GetController();
 			FPointDamageEvent DamageEvent(Damage,HitRes,ShotDirection,nullptr);			
-			Zombie->TakeDamage(Damage,DamageEvent,MyController,Gun);		
+			Zombie->TakeDamage(Damage,DamageEvent,MyController,CurrentWeapon);		
 		}			
 	}
 }
