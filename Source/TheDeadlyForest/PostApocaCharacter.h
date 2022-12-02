@@ -69,6 +69,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	inline bool HasAGun() const {return CurrentWeapon!=nullptr;}
 
+	void TryToReload();
+
 private:
 	//Basic movement and camera rotation
 	void MoveForward(float AxisValue);

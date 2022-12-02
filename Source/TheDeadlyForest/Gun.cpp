@@ -20,14 +20,17 @@ AGun::AGun()
 void AGun::BeginPlay()
 {
 	Super::BeginPlay();
-	CurrentAmmo=MaxAmmo;
+	Reload();
 }
 
 bool AGun::Shoot(FHitResult& HitResult, FVector& ShotDirection)
 {	
-	if(CurrentAmmo==0)
+	if(CurrentAmmoInClip==0)
 	{
-		return false;
+		if(!Reload())
+		{
+			return false;
+		}
 	}
 	if(ShootSound)
 	{
@@ -53,7 +56,7 @@ bool AGun::Shoot(FHitResult& HitResult, FVector& ShotDirection)
 		ECC_GameTraceChannel1,
 		ParamIgnore
 	);
-	CurrentAmmo--;
+	CurrentAmmoInClip--;
 	return bHitSomething;
 }
 
@@ -71,5 +74,14 @@ AController* AGun::GetMyOwnerController() const
 
 	AController* MyOwnerController = OwnerPawn->GetController();
 	return MyOwnerController;
+}
+
+bool AGun::Reload()
+{
+	int AmmoToReload = ClipCapacity - CurrentAmmoInClip;
+	AmmoToReload = FMath::Min(AmmoToReload,AllAmmo);
+	CurrentAmmoInClip+=AmmoToReload;
+	AllAmmo-=AmmoToReload;
+	return AmmoToReload!=0;
 }
 

@@ -22,10 +22,13 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category="Clip")
-	int MaxAmmo = 40;
+	int ClipCapacity=40;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category="Clip")
+	int AllAmmo = 100;
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clip")
-	int CurrentAmmo =0;
+	int CurrentAmmoInClip =0;
 
 public:	
 	// Called every frame
@@ -37,6 +40,8 @@ public:
 	inline float GetDamage() const {return Damage;}
 
 	AController* GetMyOwnerController() const;
+
+	bool Reload();
 
 private:
 	UPROPERTY(VisibleAnywhere)

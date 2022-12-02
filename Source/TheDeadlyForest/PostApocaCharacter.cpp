@@ -89,31 +89,26 @@ void APostApocaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	//Mouse
-	PlayerInputComponent->BindAxis(TEXT("LookUp"),this,&APostApocaCharacter::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis(TEXT("LookRight"),this,&APostApocaCharacter::AddControllerYawInput);
-	PlayerInputComponent->BindAction(TEXT("SwitchWeaponUp"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::SwitchWeaponUp);
-	PlayerInputComponent->BindAction(TEXT("SwitchWeaponDown"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::SwitchWeaponDown);
-
-	//Gamepad
-	PlayerInputComponent->BindAxis(TEXT("LookUpRate"),this,&APostApocaCharacter::LookUpRate);
-	PlayerInputComponent->BindAxis(TEXT("LookRightRate"),this,&APostApocaCharacter::LookRightRate);
-
-	//Keyboard
+	//Basic Movement
 	PlayerInputComponent->BindAxis(TEXT("MoveForward"),this,&APostApocaCharacter::MoveForward);
 	PlayerInputComponent->BindAxis(TEXT("MoveRight"),this,&APostApocaCharacter::MoveRight);
 	PlayerInputComponent->BindAxis(TEXT("MovementMode"),this,&APostApocaCharacter::ChangeBasicMovementMode);
-
-	//Spacebar and right trigger on the gamepad
 	PlayerInputComponent->BindAction(TEXT("Jump"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::Jump);
 
-	//Aiming
+	//Combat
+	PlayerInputComponent->BindAction(TEXT("SwitchWeaponUp"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::SwitchWeaponUp);
+	PlayerInputComponent->BindAction(TEXT("SwitchWeaponDown"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::SwitchWeaponDown);
+	PlayerInputComponent->BindAction(TEXT("ReloadGun"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::TryToReload);
 	PlayerInputComponent->BindAction(TEXT("Aiming"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::StartAiming);
 	PlayerInputComponent->BindAction(TEXT("Aiming"),EInputEvent::IE_Released,this,&APostApocaCharacter::EndAiming);
-	PlayerInputComponent->BindAction(TEXT("ChangeCamera"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::ChangeCameraMode);
-
-	//Shooting
 	PlayerInputComponent->BindAction(TEXT("PullTrigger"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::PullTrigger);
+
+	//Camera rotation, change
+	PlayerInputComponent->BindAxis(TEXT("LookUp"),this,&APostApocaCharacter::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis(TEXT("LookRight"),this,&APostApocaCharacter::AddControllerYawInput);
+	PlayerInputComponent->BindAxis(TEXT("LookUpRate"),this,&APostApocaCharacter::LookUpRate);
+	PlayerInputComponent->BindAxis(TEXT("LookRightRate"),this,&APostApocaCharacter::LookRightRate);
+	PlayerInputComponent->BindAction(TEXT("ChangeCamera"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::ChangeCameraMode);
 }
 
 void APostApocaCharacter::MoveForward(float AxisValue)
@@ -342,5 +337,13 @@ void APostApocaCharacter::PullTrigger()
 			FPointDamageEvent DamageEvent(Damage,HitRes,ShotDirection,nullptr);			
 			Zombie->TakeDamage(Damage,DamageEvent,MyController,CurrentWeapon);		
 		}			
+	}
+}
+
+void APostApocaCharacter::TryToReload()
+{
+	if(AGun* GunToReload = Cast<AGun>(CurrentWeapon))
+	{
+		GunToReload->Reload();
 	}
 }

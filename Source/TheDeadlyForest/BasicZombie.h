@@ -29,6 +29,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void SetAnimationZombieDeath();
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category="Attack")
+	bool bIsZombieAttacking = false;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
