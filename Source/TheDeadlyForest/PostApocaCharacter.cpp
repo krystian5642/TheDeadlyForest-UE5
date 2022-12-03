@@ -9,6 +9,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "BasicZombie.h"
 #include "Components/PrimitiveComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "KillAndSurviveGameMode.h"
 
 // Sets default values
 APostApocaCharacter::APostApocaCharacter()
@@ -109,6 +111,50 @@ void APostApocaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	PlayerInputComponent->BindAxis(TEXT("LookUpRate"),this,&APostApocaCharacter::LookUpRate);
 	PlayerInputComponent->BindAxis(TEXT("LookRightRate"),this,&APostApocaCharacter::LookRightRate);
 	PlayerInputComponent->BindAction(TEXT("ChangeCamera"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::ChangeCameraMode);
+}
+
+float APostApocaCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
+	AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
+	UE_LOG(LogTemp,Display,TEXT("%f"),CurrentHealth);
+	if(DamageAmount<=0 || CurrentHealth == 0)
+	{
+		return 0;
+	}
+	float DamageApplied = FMath::Min(CurrentHealth,DamageAmount);
+	CurrentHealth-=DamageApplied;
+	if(!IsAlive())
+	{
+		AKillAndSurviveGameMode* GameMode = GetWorld()->GetAuthGameMode<AKillAndSurviveGameMode>();
+		if(GameMode)
+		{
+			PlayerHasDied();		
+			FTimerHandle UnusedHandle;
+			GetWorldTimerManager().SetTimer
+			(
+				UnusedHandle, 
+				this, 
+				&APostApocaCharacter::DropWeapon, 
+				0.8, 
+				false
+			);		
+			GameMode->PawnKilled(this);
+		}
+		DetachFromControllerPendingDestroy();
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+	return DamageApplied;
+}
+
+void APostApocaCharacter::DropWeapon()
+{
+	if(CurrentWeapon && CurrentWeapon->GetMesh())
+	{
+		CurrentWeapon->GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+		CurrentWeapon->GetMesh()->SetCollisionProfileName(TEXT("BlockAll"));
+		CurrentWeapon->GetMesh()->SetSimulatePhysics(true);
+	}
 }
 
 void APostApocaCharacter::MoveForward(float AxisValue)

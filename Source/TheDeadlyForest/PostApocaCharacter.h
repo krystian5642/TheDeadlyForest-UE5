@@ -67,9 +67,18 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(BlueprintCallable)
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION(BlueprintCallable)
 	inline bool HasAGun() const {return CurrentWeapon!=nullptr;}
 
+	UFUNCTION(BlueprintCallable)
+	inline bool IsAlive() const {return CurrentHealth!=0;}
+
 	void TryToReload();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayerHasDied();
 
 private:
 	//Basic movement and camera rotation
@@ -91,6 +100,7 @@ private:
 	void SwitchWeaponUp();
 	void SwitchWeaponDown();
 	void EnableNewWeapon();
+	void DropWeapon();
 
 	//Because bUseControllerRotationYaw is set to false when we finish aiming
 	void ControlCameraMode();

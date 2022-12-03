@@ -7,6 +7,7 @@
 #include "BasicZombie.generated.h"
 
 class UCapsuleComponent;
+class UBoxComponent;
 
 UCLASS()
 class THEDEADLYFOREST_API ABasicZombie : public ACharacter
@@ -29,6 +30,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void SetAnimationZombieDeath();
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category="Attack")
+	bool bIsAttacking = false;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -50,5 +54,4 @@ private:
 	//When head is hit by bullet, zombie dies
 	UPROPERTY(VisibleAnywhere)
 	UCapsuleComponent* HeadHitCapsule;
-
 };

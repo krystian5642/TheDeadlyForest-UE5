@@ -4,7 +4,7 @@
 #include "BasicZombie.h"
 #include "Components/CapsuleComponent.h"
 #include "KillAndSurviveGameMode.h"
-#include "Components/CapsuleComponent.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values
 ABasicZombie::ABasicZombie()
