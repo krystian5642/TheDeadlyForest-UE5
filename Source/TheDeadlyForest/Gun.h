@@ -8,6 +8,14 @@
 
 class USoundBase;
 
+UENUM(BlueprintType)
+enum class EGunFireMode : uint8
+{
+	SingleFire,
+	Burst,
+	FullAuto
+};
+
 UCLASS()
 class THEDEADLYFOREST_API AGun : public AActor
 {
@@ -30,18 +38,21 @@ protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Clip")
 	int CurrentAmmoInClip =0;
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="FireMode")
+	EGunFireMode CurrentFireMode = EGunFireMode::SingleFire;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	inline USkeletalMeshComponent* GetMesh() const{return GunMesh;} 
-	bool Shoot(FHitResult& HitResult, FVector& ShotDirection);
-
 	inline float GetDamage() const {return Damage;}
-
 	AController* GetMyOwnerController() const;
-
+	bool FireBullet();
 	bool Reload();
+	void ChangeFireMode();
+	inline EGunFireMode GetCurrentFireMode() const {return CurrentFireMode;}
+	inline int GetMaxAmmoInBurstRound() const {return MaxAmmoInBurstRound;}
 
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -55,4 +66,11 @@ private:
 
 	UPROPERTY(EditDefaultsOnly,Category="Combat")
 	float FireRange = 15000;
+
+	UPROPERTY(EditDefaultsOnly,Category="Combat")
+	int MaxAmmoInBurstRound = 3;
+
+	bool GunTraceChannel(FHitResult& HitResult, FVector& ShotDirection);
+	
+
 };
