@@ -59,8 +59,6 @@ protected:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Camera")
 	ECameraMode CameraMode = ECameraMode::ThirdPersonClose;
 
-	bool bIsCharacterShooting = false;
-
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -103,9 +101,6 @@ private:
 	void SwitchWeaponDown();
 	void EnableNewWeapon();
 	void DropWeapon();
-	void TryToAttack();
-	void UseWeaponIfAttack();
-	void ChangeFireMode();
 
 	//Because bUseControllerRotationYaw is set to false when we finish aiming
 	void ControlCameraMode();
@@ -131,9 +126,6 @@ private:
 	UPROPERTY(VisibleAnywhere,Category="Weapon")
 	int32 CurrentWeaponIndex=0;
 
-	UPROPERTY(VisibleAnywhere,Category="Weapon")
-	int AmmoRounds = 0;
-
 	UPROPERTY(BlueprintReadOnly,meta=(AllowPrivateAccess=true))
 	AGun* CurrentWeapon = nullptr;
 
@@ -145,8 +137,5 @@ private:
 
 	UPROPERTY(VisibleAnywhere,Category="Health")
 	float CurrentHealth = 0.f;
-
-	UPROPERTY(VisibleAnywhere,Category="Health")
-	bool bIsTryingToAttack = false;
 
 };

@@ -5,7 +5,6 @@
 #include "Sound/SoundBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
-#include "BasicZombie.h"
 
 // Sets default values
 AGun::AGun()
@@ -24,14 +23,7 @@ void AGun::BeginPlay()
 	Reload();
 }
 
-// Called every frame
-void AGun::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
-bool AGun::FireBullet()
+bool AGun::Shoot(FHitResult& HitResult, FVector& ShotDirection)
 {	
 	if(CurrentAmmoInClip==0)
 	{
@@ -44,32 +36,7 @@ bool AGun::FireBullet()
 	{
 		UGameplayStatics::SpawnSoundAttached(ShootSound,GunMesh,TEXT("Muzzle"));
 	}
-	FHitResult HitRes;
-	FVector ShotDirection;
-	bool bIsHitSomething = GunTraceChannel(HitRes,ShotDirection);
-	CurrentAmmoInClip--;
-	if(bIsHitSomething)
-	{
-		if(ABasicZombie* Zombie = Cast<ABasicZombie>(HitRes.GetActor()))
-		{	
-			UPrimitiveComponent* HitComponent = HitRes.GetComponent();
-			float ActualDamage = GetDamage();
-			//we have to check if our shot has hit enemy/zombie head
-			const FName& ZombieHitBoxName = HitComponent->GetFName();
-			if(ZombieHitBoxName == TEXT("HeadHitCapsule"))
-			{
-				ActualDamage = Zombie->GetCurrentHealth();
-			}
-			AController* MyOwnerController = GetMyOwnerController();
-			FPointDamageEvent DamageEvent(ActualDamage,HitRes,ShotDirection,nullptr);			
-			Zombie->TakeDamage(ActualDamage,DamageEvent, MyOwnerController,this);		
-		}			
-	}
-	return true;
-}
 
-bool AGun::GunTraceChannel(FHitResult& HitResult, FVector& ShotDirection)
-{
 	AController* Controller = GetMyOwnerController();
 	FVector Location;
 	FRotator Rotation;
@@ -81,7 +48,7 @@ bool AGun::GunTraceChannel(FHitResult& HitResult, FVector& ShotDirection)
 	ParamIgnore.AddIgnoredActor(GetOwner());
 
 	FVector End = Location + Rotation.Vector() * FireRange;
-	return GetWorld()->LineTraceSingleByChannel
+	bool bHitSomething = GetWorld()->LineTraceSingleByChannel
 	(
 		HitResult,
 		Location,
@@ -89,6 +56,15 @@ bool AGun::GunTraceChannel(FHitResult& HitResult, FVector& ShotDirection)
 		ECC_GameTraceChannel1,
 		ParamIgnore
 	);
+	CurrentAmmoInClip--;
+	return bHitSomething;
+}
+
+// Called every frame
+void AGun::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
 }
 
 AController* AGun::GetMyOwnerController() const
@@ -107,21 +83,5 @@ bool AGun::Reload()
 	CurrentAmmoInClip+=AmmoToReload;
 	AllAmmo-=AmmoToReload;
 	return AmmoToReload!=0;
-}
-
-void AGun::ChangeFireMode()
-{
-	switch (CurrentFireMode)
-	{
-		case EGunFireMode::SingleFire:
-			CurrentFireMode =  EGunFireMode::Burst;
-			break;
-		case EGunFireMode::Burst:
-			CurrentFireMode = EGunFireMode::FullAuto;
-			break;
-		case EGunFireMode::FullAuto:
-			CurrentFireMode = EGunFireMode::SingleFire;
-			break;
-	}
 }
 

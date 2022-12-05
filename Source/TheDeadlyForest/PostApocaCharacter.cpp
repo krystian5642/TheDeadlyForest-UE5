@@ -84,7 +84,6 @@ void APostApocaCharacter::Tick(float DeltaTime)
 	AdjustMaxWalkSpeed();
 	UpdateLeftHandTransform();
 	ControlCameraMode();
-	UseWeaponIfAttack();
 }
 
 // Called to bind functionality to input
@@ -104,9 +103,7 @@ void APostApocaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	PlayerInputComponent->BindAction(TEXT("ReloadGun"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::TryToReload);
 	PlayerInputComponent->BindAction(TEXT("Aiming"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::StartAiming);
 	PlayerInputComponent->BindAction(TEXT("Aiming"),EInputEvent::IE_Released,this,&APostApocaCharacter::EndAiming);
-	PlayerInputComponent->BindAction(TEXT("Attack"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::TryToAttack);
-	PlayerInputComponent->BindAction(TEXT("Attack"),EInputEvent::IE_Released,this,&APostApocaCharacter::TryToAttack);
-	PlayerInputComponent->BindAction(TEXT("ChangeFireMode"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::ChangeFireMode);
+	PlayerInputComponent->BindAction(TEXT("PullTrigger"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::PullTrigger);
 
 	//Camera rotation, change
 	PlayerInputComponent->BindAxis(TEXT("LookUp"),this,&APostApocaCharacter::AddControllerPitchInput);
@@ -150,6 +147,15 @@ float APostApocaCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 	return DamageApplied;
 }
 
+void APostApocaCharacter::DropWeapon()
+{
+	if(CurrentWeapon && CurrentWeapon->GetMesh())
+	{
+		CurrentWeapon->GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+		CurrentWeapon->GetMesh()->SetCollisionProfileName(TEXT("BlockAll"));
+		CurrentWeapon->GetMesh()->SetSimulatePhysics(true);
+	}
+}
 
 void APostApocaCharacter::MoveForward(float AxisValue)
 {
@@ -352,20 +358,32 @@ void APostApocaCharacter::ControlCameraMode()
 	}
 }
 
-void APostApocaCharacter::DropWeapon()
-{
-	if(CurrentWeapon && CurrentWeapon->GetMesh())
+void APostApocaCharacter::PullTrigger()
+{	
+	bool bIsHitSomething = false;
+	FHitResult HitRes;
+	FVector ShotDirection;
+	if(CurrentWeapon && bIsPlayerAiming)
 	{
-		CurrentWeapon->GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-		CurrentWeapon->GetMesh()->SetCollisionProfileName(TEXT("BlockAll"));
-		CurrentWeapon->GetMesh()->SetSimulatePhysics(true);
+		bIsHitSomething = CurrentWeapon->Shoot(HitRes,ShotDirection);
 	}
-}
-
-void APostApocaCharacter::TryToAttack()
-{
-	bIsTryingToAttack=!bIsTryingToAttack;
-	AmmoRounds = 0;
+	if(bIsHitSomething)
+	{
+		if(ABasicZombie* Zombie = Cast<ABasicZombie>(HitRes.GetActor()))
+		{	
+			UPrimitiveComponent* HitComponent = HitRes.GetComponent();
+			float Damage = CurrentWeapon->GetDamage();
+			//we have to check if our shot has hit enemy/zombie head
+			const FName& ZombieHitBoxName = HitComponent->GetFName();
+			if(ZombieHitBoxName == TEXT("HeadHitCapsule"))
+			{
+				Damage = Zombie->GetCurrentHealth();
+			}
+			AController* MyController = GetController();
+			FPointDamageEvent DamageEvent(Damage,HitRes,ShotDirection,nullptr);			
+			Zombie->TakeDamage(Damage,DamageEvent,MyController,CurrentWeapon);		
+		}			
+	}
 }
 
 void APostApocaCharacter::TryToReload()
@@ -373,42 +391,5 @@ void APostApocaCharacter::TryToReload()
 	if(AGun* GunToReload = Cast<AGun>(CurrentWeapon))
 	{
 		GunToReload->Reload();
-	}
-}
-
-void APostApocaCharacter::UseWeaponIfAttack()
-{
-	if(bIsTryingToAttack && CurrentWeapon)
-	{
-		EGunFireMode CurrentFireMode = CurrentWeapon->GetCurrentFireMode();
-		if(CurrentFireMode == EGunFireMode::SingleFire && AmmoRounds == 0)
-		{
-			if(CurrentWeapon->FireBullet())
-			{
-				AmmoRounds++;
-			}
-		}
-		else if(CurrentFireMode == EGunFireMode::Burst && AmmoRounds<CurrentWeapon->GetMaxAmmoInBurstRound())
-		{
-			if(CurrentWeapon->FireBullet())
-			{
-				AmmoRounds++;
-			}
-		}
-		else if(CurrentFireMode == EGunFireMode::FullAuto)
-		{
-			if(CurrentWeapon->FireBullet())
-			{
-				AmmoRounds++;
-			}
-		}
-	}
-}
-
-void APostApocaCharacter::ChangeFireMode()
-{
-	if(Cast<AGun>(CurrentWeapon))
-	{
-		CurrentWeapon->ChangeFireMode();
 	}
 }
