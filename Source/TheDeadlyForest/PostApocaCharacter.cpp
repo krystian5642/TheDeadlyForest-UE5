@@ -126,7 +126,6 @@ float APostApocaCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 	AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
-	UE_LOG(LogTemp,Display,TEXT("%f"),CurrentHealth);
 	if(DamageAmount<=0 || CurrentHealth == 0)
 	{
 		return 0;

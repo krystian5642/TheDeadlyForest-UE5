@@ -25,5 +25,11 @@ private:
 	UPROPERTY()
 	UUserWidget* HUD;
 
-	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UUserWidget> GameOverWidget;
+
+	UPROPERTY()
+	UUserWidget* GameOver;
+
+	void DisplayGameOverWidget();
 };

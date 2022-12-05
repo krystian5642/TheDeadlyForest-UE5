@@ -3,6 +3,7 @@
 
 #include "PostApocaPlayerController.h"
 #include "Blueprint/UserWidget.h"
+#include "TimerManager.h"
 
 void APostApocaPlayerController::BeginPlay()
 {
@@ -17,7 +18,28 @@ void APostApocaPlayerController::BeginPlay()
 void APostApocaPlayerController::GameHasEnded(AActor* EndGameFocus, bool bIsWinner)
 {
     Super::GameHasEnded(EndGameFocus,bIsWinner);
+    if(HUD)
+    {
+        HUD->RemoveFromParent();
+    }
+    FTimerHandle GameOverWidgetDelayTimer;
+    GetWorld()->GetTimerManager().SetTimer
+    (
+        GameOverWidgetDelayTimer,
+        this,
+        &APostApocaPlayerController::DisplayGameOverWidget,
+        1.5,
+        false
+    );
+}
 
+void APostApocaPlayerController::DisplayGameOverWidget()
+{
+    GameOver = CreateWidget(this,GameOverWidget);
+    if(GameOver)
+    {
+        GameOver->AddToViewport();
+    }
 }
 
 

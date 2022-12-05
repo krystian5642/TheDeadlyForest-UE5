@@ -4,15 +4,16 @@
 #include "KillAndSurviveGameMode.h"
 #include "EngineUtils.h"
 #include "GameFramework/Controller.h"
+#include "GameFramework/PlayerController.h"
 
 void AKillAndSurviveGameMode::PawnKilled(APawn* DeadPawn)
 {
     Super::PawnKilled(DeadPawn);
 
-    AController* PawnController = DeadPawn->GetController();
-    if(PawnController)
+    APlayerController* PlayerController = DeadPawn->GetController<APlayerController>();
+    if(PlayerController)
     {
-        EndGame(true);
+        EndGame(false);
     }
 }
 
