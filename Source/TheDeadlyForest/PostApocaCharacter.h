@@ -10,6 +10,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 class AGun;
+class UUserWidget;
 
 UENUM(BlueprintType)
 enum class EBasicMovementMode : uint8
@@ -101,6 +102,7 @@ private:
 	void SwitchWeaponDown();
 	void EnableNewWeapon();
 	void DropWeapon();
+	void PauseMenuFlip();
 
 	//Because bUseControllerRotationYaw is set to false when we finish aiming
 	void ControlCameraMode();
@@ -137,5 +139,13 @@ private:
 
 	UPROPERTY(VisibleAnywhere,Category="Health")
 	float CurrentHealth = 0.f;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UUserWidget> PauseMenuClass;
+
+	UPROPERTY()
+	UUserWidget* PauseMenu;
+
+	bool bIsPauseMenuOnScreen = false;
 
 };

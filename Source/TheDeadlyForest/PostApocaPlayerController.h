@@ -19,8 +19,8 @@ public:
 	virtual void GameHasEnded(AActor* EndGameFocus, bool bIsWinner) override;
 
 private:
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<UUserWidget> MainGameWidget;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UUserWidget> HUDWidgetClass;
 
 	UPROPERTY()
 	UUserWidget* HUD;

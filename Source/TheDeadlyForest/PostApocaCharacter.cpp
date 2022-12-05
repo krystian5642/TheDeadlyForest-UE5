@@ -11,6 +11,10 @@
 #include "Components/PrimitiveComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "KillAndSurviveGameMode.h"
+#include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
+#include "PostApocaPlayerController.h"
 
 // Sets default values
 APostApocaCharacter::APostApocaCharacter()
@@ -75,6 +79,7 @@ void APostApocaCharacter::BeginPlay()
 		}
 	}
 	CurrentHealth=MaxHealth;
+	PauseMenu = CreateWidget(GetController<APostApocaPlayerController>(),PauseMenuClass);
 }
 
 // Called every frame
@@ -111,6 +116,10 @@ void APostApocaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	PlayerInputComponent->BindAxis(TEXT("LookUpRate"),this,&APostApocaCharacter::LookUpRate);
 	PlayerInputComponent->BindAxis(TEXT("LookRightRate"),this,&APostApocaCharacter::LookRightRate);
 	PlayerInputComponent->BindAction(TEXT("ChangeCamera"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::ChangeCameraMode);
+
+	//User interface
+	FInputActionBinding& InputActionPauseGame= PlayerInputComponent->BindAction(TEXT("PauseGame"),EInputEvent::IE_Pressed,this,&APostApocaCharacter::PauseMenuFlip);
+	InputActionPauseGame.bExecuteWhenPaused = true;
 }
 
 float APostApocaCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
@@ -320,7 +329,7 @@ void APostApocaCharacter::ChangeCameraMode()
 	{
 		case ECameraMode::ThirdPersonClose:
 			CameraMode = ECameraMode::ThirdPersonFar;
-			SpringArm->TargetArmLength*=3.f/2.f;
+			SpringArm->TargetArmLength*=3.f/2.f;	
 			break;
 
 		case ECameraMode::ThirdPersonFar:
@@ -374,4 +383,30 @@ void APostApocaCharacter::TryToReload()
 	{
 		GunToReload->Reload();
 	}
+}
+
+void APostApocaCharacter::PauseMenuFlip()
+{
+	if(PauseMenu)
+	{
+		APlayerController* MyController = GetController<APlayerController>();
+		if(!MyController)
+		{
+			return;
+		}
+		MyController->bShowMouseCursor = !bIsPauseMenuOnScreen;
+		UGameplayStatics::SetGamePaused(GetWorld(),!bIsPauseMenuOnScreen);
+		if(!bIsPauseMenuOnScreen)
+		{
+			PauseMenu->AddToViewport();
+			UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(MyController);
+		}
+		else
+		{
+			PauseMenu->RemoveFromParent();
+			UWidgetBlueprintLibrary::SetInputMode_GameOnly(MyController);
+		}
+		bIsPauseMenuOnScreen=!bIsPauseMenuOnScreen;
+	}
+	
 }

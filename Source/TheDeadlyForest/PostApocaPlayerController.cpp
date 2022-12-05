@@ -7,7 +7,7 @@
 void APostApocaPlayerController::BeginPlay()
 {
     Super::BeginPlay();
-    HUD = CreateWidget(this,MainGameWidget);
+    HUD = CreateWidget(this,HUDWidgetClass);
     if(HUD)
     {
         HUD->AddToViewport();
