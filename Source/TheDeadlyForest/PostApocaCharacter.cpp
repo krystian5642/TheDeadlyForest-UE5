@@ -360,29 +360,11 @@ void APostApocaCharacter::ControlCameraMode()
 
 void APostApocaCharacter::PullTrigger()
 {	
-	bool bIsHitSomething = false;
 	FHitResult HitRes;
 	FVector ShotDirection;
 	if(CurrentWeapon && bIsPlayerAiming)
 	{
-		bIsHitSomething = CurrentWeapon->Shoot(HitRes,ShotDirection);
-	}
-	if(bIsHitSomething)
-	{
-		if(ABasicZombie* Zombie = Cast<ABasicZombie>(HitRes.GetActor()))
-		{	
-			UPrimitiveComponent* HitComponent = HitRes.GetComponent();
-			float Damage = CurrentWeapon->GetDamage();
-			//we have to check if our shot has hit enemy/zombie head
-			const FName& ZombieHitBoxName = HitComponent->GetFName();
-			if(ZombieHitBoxName == TEXT("HeadHitCapsule"))
-			{
-				Damage = Zombie->GetCurrentHealth();
-			}
-			AController* MyController = GetController();
-			FPointDamageEvent DamageEvent(Damage,HitRes,ShotDirection,nullptr);			
-			Zombie->TakeDamage(Damage,DamageEvent,MyController,CurrentWeapon);		
-		}			
+		CurrentWeapon->FireBullet();
 	}
 }
 

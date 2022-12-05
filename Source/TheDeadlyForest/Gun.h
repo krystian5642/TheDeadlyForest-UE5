@@ -35,7 +35,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	inline USkeletalMeshComponent* GetMesh() const{return GunMesh;} 
-	bool Shoot(FHitResult& HitResult, FVector& ShotDirection);
+	bool FireBullet();
 
 	inline float GetDamage() const {return Damage;}
 
@@ -55,4 +55,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly,Category="Combat")
 	float FireRange = 15000;
+
+	bool GunTraceChannel(FHitResult& HitResult, FVector& ShotDirection);
 };
